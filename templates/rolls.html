@@ -1,0 +1,35 @@
+{{template "header.html"}}
+<div class="container">
+    <!--Title and new roll button-->
+    <div class="row my-3">
+        <div class="col my-auto">
+            <h1>My Photo Rolls</h1>
+        </div>
+        <div class="col text-end my-auto">
+            <button type="button" class="btn btn-dark">+ New Roll</button>
+        </div>
+    </div>
+
+    <!--Content-->
+    <div class="row">
+        {{range $filmRoll := .filmRoll}}
+        <div class="col">
+            <div class="card mx-auto mb-4" style="width: 22rem;">
+                <div class="card-body">
+                    <div class="row ">
+                        <div class="col my-auto">
+                            <h6 class="card-subtitle mb-2 text-muted">{{(index $.types .Type_id)}}</h6>
+                        </div>
+                        <div class="col text-end">
+                            <button type="button" class="btn btn-outline-danger btn-sm">X</button>
+                        </div>
+                    </div>
+                    <h5 class="card-title">{{$filmRoll.Title}}</h5>
+                    <p class="card-text">{{$filmRoll.Description}}</p>
+                </div>
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>
+{{template "footer.html"}}

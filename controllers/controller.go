@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"bytes"
+	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
@@ -61,8 +63,29 @@ func OpenRolls(c *gin.Context) {
 		}
 	}
 
+	allRollTypes := &models.MultipleRollTypeResponse{}
+	err = utils.GetJson(host+"/rolltype/", allRollTypes)
+	if err != nil {
+		log.Println(err)
+	}
+
+	// fmt.Printf("%#v\n", allRollTypes.Result)
+
 	c.HTML(http.StatusOK, "rolls.html", gin.H{
-		"filmRoll": filmRoll.Result,
-		"types":    typeids,
+		"filmRoll":     filmRoll.Result,
+		"types":        typeids,
+		"allRollTypes": allRollTypes.Result,
 	})
+}
+
+func CreateRoll(c *gin.Context) {
+	filmRequest := &models.FilmRollRequest{}
+	filmRequest.Title = c.PostForm("title")
+	filmRequest.Description = c.PostForm("description")
+	stockNameValue, _ := strconv.Atoi(c.Request.FormValue("stockName"))
+	filmRequest.Type_Id = stockNameValue
+	jsonValues, _ := json.Marshal(filmRequest)
+
+	http.Post(host+"/filmroll/", "application/json", bytes.NewBuffer(jsonValues))
+	c.Redirect(http.StatusFound, "/rolls")
 }

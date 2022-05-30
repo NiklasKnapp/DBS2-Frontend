@@ -6,7 +6,9 @@
             <h1>My Photo Rolls</h1>
         </div>
         <div class="col text-end my-auto">
-            <button type="button" class="btn btn-dark">+ New Roll</button>
+            <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                + New Roll
+            </button>
         </div>
     </div>
 
@@ -14,7 +16,7 @@
     <div class="row">
         {{range $filmRoll := .filmRoll}}
         <div class="col">
-            <div class="card mx-auto mb-4" style="width: 22rem;">
+            <a href="#" class="card mx-auto mb-4" style="width: 22rem; text-decoration: none; color: #212529">
                 <div class="card-body">
                     <div class="row ">
                         <div class="col my-auto">
@@ -27,9 +29,74 @@
                     <h5 class="card-title">{{$filmRoll.Title}}</h5>
                     <p class="card-text">{{$filmRoll.Description}}</p>
                 </div>
-            </div>
+            </a>
         </div>
         {{end}}
     </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="exampleModalLabel">Add a new Film Roll</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/createRoll" method="post" name="createRoll" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="TitleInput" class="form-label">Title</label>
+                        <input type="text" name="title" class="form-control" id="TitleInput" required>
+                        <div class="invalid-feedback">
+                            Please provide a valid Title.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="DescInput" class="form-label">Description</label>
+                        <input type="text" name="description" class="form-control" id="DescInput" required>
+                        <div class="invalid-feedback">
+                            Please provide a valid Description.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="DescInput" class="form-label">Select a Roll Type</label>
+                        <select class="form-select" name="stockName" aria-label="Default select example">
+                            {{range .allRollTypes}}
+                            <option value={{.Type_id}}>{{.StockName}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+            <!-- <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-dark">Save changes</button>
+            </div> -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+(() => {
+    'use strict'
+
+  // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    const forms = document.querySelectorAll('.needs-validation')
+
+  // Loop over them and prevent submission
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+</script>
 {{template "footer.html"}}

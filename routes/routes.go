@@ -9,4 +9,5 @@ var RegisterRoutes = func(router *gin.Engine) {
 	router.GET("/", controllers.RedirectToIndex)
 	router.GET("/photos", controllers.OpenPhotos)
 	router.GET("/rolls", controllers.OpenRolls)
+	router.POST("/createRoll", controllers.CreateRoll)
 }

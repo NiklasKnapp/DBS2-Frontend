@@ -2,7 +2,10 @@ package controllers
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
+	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -76,6 +79,62 @@ func OpenRolls(c *gin.Context) {
 		"types":        typeids,
 		"allRollTypes": allRollTypes.Result,
 	})
+}
+
+func OpenRollById(c *gin.Context) {
+
+}
+
+func ShowPhoto(c *gin.Context) {
+	uuid := c.Params.ByName("uuid")
+	resp, _ := http.Get(host + "/photodata/" + uuid)
+
+	photo, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+
+	var base64Photo string
+	mimeType := http.DetectContentType(photo)
+	switch mimeType {
+	case "image/jpeg":
+		base64Photo += "data:image/jpeg;base64,"
+	case "image/png":
+		base64Photo += "data:image/png;base64,"
+	}
+	base64Photo += base64.StdEncoding.EncodeToString(photo)
+	photoLink := template.URL(base64Photo)
+
+	c.HTML(http.StatusOK, "rollById.html", gin.H{
+		"photo": photoLink,
+	})
+
+	// c.Data(http.StatusOK, "image/jpeg", photo)
+
+	// c.HTML(http.StatusOK, "rollById.html", gin.H{
+	// 	"photo": resp,
+	// })
+
+	// uuid := c.Params.ByName("uuid")
+	// resp, _ := http.Get(host + "/photodata/" + uuid)
+
+	// photo, _ := ioutil.ReadAll(resp.Body)
+	// resp.Body.Close()
+
+	// fmt.Printf("%#v\n", photo)
+
+	// var base64Photo string
+	// mimeType := http.DetectContentType(photo)
+	// switch mimeType {
+	// case "image/jpeg":
+	// 	base64Photo += "data:image/jpeg;base64,"
+	// case "image/png":
+	// 	base64Photo += "data:image/png;base64,"
+	// }
+	// base64Photo += base64.StdEncoding.EncodeToString(photo)
+	// fmt.Printf("%#v\n", base64Photo)
+
+	// c.HTML(http.StatusOK, "rollById.html", gin.H{
+	// 	"photo": photo,
+	// })
 }
 
 func CreateRoll(c *gin.Context) {

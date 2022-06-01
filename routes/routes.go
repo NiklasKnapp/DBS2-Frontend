@@ -10,4 +10,6 @@ var RegisterRoutes = func(router *gin.Engine) {
 	router.GET("/photos", controllers.OpenPhotos)
 	router.GET("/rolls", controllers.OpenRolls)
 	router.POST("/createRoll", controllers.CreateRoll)
+	router.GET("/roll/:id", controllers.OpenRollById)
+	router.GET("/showphoto/:uuid", controllers.ShowPhoto)
 }

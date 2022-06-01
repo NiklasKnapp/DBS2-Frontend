@@ -15,15 +15,15 @@
     <!--Content-->
     <div class="row">
         {{range $filmRoll := .filmRoll}}
-        <div class="col">
-            <a href="#" class="card mx-auto mb-4" style="width: 22rem; text-decoration: none; color: #212529">
+        <div class="col" value="{{$filmRoll.Roll_id}}">
+            <a href="/roll/{{$filmRoll.Roll_id}}" class="card mx-auto mb-4" style="width: 22rem; text-decoration: none; color: #212529">
                 <div class="card-body">
                     <div class="row ">
                         <div class="col my-auto">
                             <h6 class="card-subtitle mb-2 text-muted">{{(index $.types .Type_id)}}</h6>
                         </div>
                         <div class="col text-end">
-                            <button type="button" class="btn btn-outline-danger btn-sm">X</button>
+                            <!-- <button type="button" class="btn btn-outline-danger btn-sm">X</button> -->
                         </div>
                     </div>
                     <h5 class="card-title">{{$filmRoll.Title}}</h5>
@@ -34,6 +34,7 @@
         {{end}}
     </div>
 </div>
+
 
 <!-- Modal -->
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">

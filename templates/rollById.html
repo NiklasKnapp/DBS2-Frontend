@@ -3,16 +3,46 @@
     <!--Title and new roll button-->
     <div class="row my-3">
         <div class="col my-auto">
-            <h1>My Photo Rolls</h1>
+            <h5 class="text-muted">{{.rollType.StockName}}</h5>
+            <h1 class="fw-bold">{{.rollTitle.Title}}</h1>
+            <h5 class="mx-3 mb-4 text-muted fst-italic">{{.rollTitle.Description}}</h5>
         </div>
         <div class="col text-end my-auto">
-            <!-- <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                + New Roll
-            </button> -->
+            <!-- <form action="/create" method="post" name="uploadPhotos"></form>
+                <div class="input-group">
+                    <input class="form-control" type="file" id="formFileMultiple" multiple>
+                    <button type="submit" class="btn btn-dark btn-outline-secondary">
+                        Upload
+                    </button>
+                </div>
+            </form> -->
+            <div class="container">
+                <form action="/uploadPhoto" enctype="multipart/form-data" method="post" class="row g-3 me-auto">
+                    <div class="col-auto">
+                        <input class="form-control" type="file" id="myPhotos" name="myPhotos" multiple>
+                        <input type="hidden" id="rollId" name="rollId" value="{{.rollTitle.Roll_id}}">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-dark mb-3">Upload</button>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="col">
-            <img src={{.photo}}>
+    </div>
+
+    <div class="row">
+        {{range $uuid, $photo := .photos}}
+        <div class="col-md-4">
+            <div class="img-thumbnail mx-3 mb-5">
+                <a href="#">
+                    <img id={{$uuid}} src={{$photo}} style="width:100%">
+                    <!-- <div class="caption">
+                        <p>Lorem ipsum...</p>
+                    </div> -->
+                </a>
+            </div>
         </div>
+        {{end}}
     </div>
 </div>
 {{template "footer.html"}}

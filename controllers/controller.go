@@ -2,12 +2,13 @@ package controllers
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"html/template"
-	"io/ioutil"
+	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
+	"os"
 	"strconv"
 
 	"de.stuttgart.hft/DBS2-Frontend/models"
@@ -82,26 +83,43 @@ func OpenRolls(c *gin.Context) {
 }
 
 func OpenRollById(c *gin.Context) {
+	//Call backend and map response to struct
+	photosResponse := &models.FilmRollPhotosResponse{}
+	rollId := c.Params.ByName("id")
+	err := utils.GetJson(host+"/photo/roll/"+rollId, photosResponse)
+	if err != nil {
+		log.Println(err)
+	}
 
+	//Create map for uuids and base64-templates -> receive each photo individually from server
+	photoData := make(map[string]template.URL)
+	for _, e := range photosResponse.Result {
+		photoData[e.Uuid] = utils.GetPhotoData(host, e.Uuid)
+	}
+
+	//Get FilmRoll Title
+	filmRoll := &models.SingleFilmRollResponse{}
+	err = utils.GetJson(host+"/filmroll/"+rollId, filmRoll)
+	if err != nil {
+		log.Println(err)
+	}
+	rollType := &models.RollTypeResponse{}
+	path := "/rolltype/" + strconv.Itoa(filmRoll.Result.Type_id)
+	err = utils.GetJson(host+path, rollType)
+	if err != nil {
+		log.Println(err)
+	}
+
+	c.HTML(http.StatusOK, "rollById.html", gin.H{
+		"photos":    photoData,
+		"rollTitle": filmRoll.Result,
+		"rollType":  rollType.Result,
+	})
 }
 
 func ShowPhoto(c *gin.Context) {
 	uuid := c.Params.ByName("uuid")
-	resp, _ := http.Get(host + "/photodata/" + uuid)
-
-	photo, _ := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-
-	var base64Photo string
-	mimeType := http.DetectContentType(photo)
-	switch mimeType {
-	case "image/jpeg":
-		base64Photo += "data:image/jpeg;base64,"
-	case "image/png":
-		base64Photo += "data:image/png;base64,"
-	}
-	base64Photo += base64.StdEncoding.EncodeToString(photo)
-	photoLink := template.URL(base64Photo)
+	photoLink := utils.GetPhotoData(host, uuid)
 
 	c.HTML(http.StatusOK, "rollById.html", gin.H{
 		"photo": photoLink,
@@ -135,6 +153,31 @@ func ShowPhoto(c *gin.Context) {
 	// c.HTML(http.StatusOK, "rollById.html", gin.H{
 	// 	"photo": photo,
 	// })
+}
+
+func UploadPhotos(c *gin.Context) {
+	buf := new(bytes.Buffer)
+	bw := multipart.NewWriter(buf)
+
+	in, _, err := c.Request.FormFile("myPhotos")
+	if err != nil {
+		log.Println("Couldn't parse FormFile: ", err)
+	}
+	defer in.Close()
+
+	out, err := os.Open("C:\\Users\\felix\\Pictures\\__Pictures\\IMG-20150331-WA0002.jpg")
+	if err != nil {
+		log.Println("Couldn't open parsed File for upload: ", err)
+	}
+
+	tw, _ := bw.CreateFormField("rollId")
+	tw.Write([]byte("11")) //[]byte(c.PostForm("rollId"))
+
+	fw, _ := bw.CreateFormFile("files", "IMG-20150331-WA0002.jpg")
+	io.Copy(fw, out)
+
+	bw.Close()
+	http.Post(host+"/photo", bw.FormDataContentType(), buf)
 }
 
 func CreateRoll(c *gin.Context) {

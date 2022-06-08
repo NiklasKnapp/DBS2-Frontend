@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -156,28 +157,42 @@ func ShowPhoto(c *gin.Context) {
 }
 
 func UploadPhotos(c *gin.Context) {
+	//Create Buffer
 	buf := new(bytes.Buffer)
 	bw := multipart.NewWriter(buf)
 
-	in, _, err := c.Request.FormFile("myPhotos")
+	//Get file from form
+	in, inHeader, err := c.Request.FormFile("myPhotos")
 	if err != nil {
 		log.Println("Couldn't parse FormFile: ", err)
 	}
 	defer in.Close()
 
-	out, err := os.Open("C:\\Users\\felix\\Pictures\\__Pictures\\IMG-20150331-WA0002.jpg")
+	//Create tempfile
+	temp, err := ioutil.TempFile("tmp/", "*"+inHeader.Filename)
+	if err != nil {
+		log.Println("Couldn't open parsed File for upload: ", err)
+	}
+	_, err = io.Copy(temp, in)
+	if err != nil {
+		log.Println("Couldn't write to temp file: ", err)
+	}
+
+	//Reopen tempfile
+	output, err := os.Open(temp.Name())
 	if err != nil {
 		log.Println("Couldn't open parsed File for upload: ", err)
 	}
 
 	tw, _ := bw.CreateFormField("rollId")
-	tw.Write([]byte("11")) //[]byte(c.PostForm("rollId"))
+	tw.Write([]byte(c.PostForm("rollId")))
 
-	fw, _ := bw.CreateFormFile("files", "IMG-20150331-WA0002.jpg")
-	io.Copy(fw, out)
+	fw, _ := bw.CreateFormFile("files", output.Name())
+	io.Copy(fw, output)
 
 	bw.Close()
 	http.Post(host+"/photo", bw.FormDataContentType(), buf)
+	c.Redirect(http.StatusFound, "/roll/"+c.PostForm("rollId"))
 }
 
 func CreateRoll(c *gin.Context) {

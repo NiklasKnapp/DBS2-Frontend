@@ -161,38 +161,80 @@ func UploadPhotos(c *gin.Context) {
 	buf := new(bytes.Buffer)
 	bw := multipart.NewWriter(buf)
 
-	//Get file from form
-	in, inHeader, err := c.Request.FormFile("myPhotos")
-	if err != nil {
-		log.Println("Couldn't parse FormFile: ", err)
-	}
-	defer in.Close()
+	formfiles, _ := c.MultipartForm()
+	files := formfiles.File["myPhotos"]
+	for _, file := range files {
+		//Get file from from
+		inHeader := file
+		in, err := file.Open()
+		if err != nil {
+			log.Println("Couldn't open FormFile: ", err)
+		}
+		defer in.Close()
 
-	//Create tempfile
-	temp, err := ioutil.TempFile("tmp/", "*"+inHeader.Filename)
-	if err != nil {
-		log.Println("Couldn't open parsed File for upload: ", err)
-	}
-	_, err = io.Copy(temp, in)
-	if err != nil {
-		log.Println("Couldn't write to temp file: ", err)
+		//Create temp file
+		temp, err := ioutil.TempFile("tmp/img/", "*"+inHeader.Filename)
+		if err != nil {
+			log.Println("Couldn't open parsed File for upload: ", err)
+		}
+		_, err = io.Copy(temp, in)
+		if err != nil {
+			log.Println("Couldn't write to temp file: ", err)
+		}
+
+		//Reopen tempfile
+		output, err := os.Open(temp.Name())
+		if err != nil {
+			log.Println("Couldn't open parsed File for upload: ", err)
+		}
+
+		//Write file to form
+		fw, _ := bw.CreateFormFile("files", output.Name())
+		io.Copy(fw, output)
 	}
 
-	//Reopen tempfile
-	output, err := os.Open(temp.Name())
-	if err != nil {
-		log.Println("Couldn't open parsed File for upload: ", err)
-	}
-
+	//Write rollId to form once
 	tw, _ := bw.CreateFormField("rollId")
 	tw.Write([]byte(c.PostForm("rollId")))
 
-	fw, _ := bw.CreateFormFile("files", output.Name())
-	io.Copy(fw, output)
-
+	//Close and send form to backend
 	bw.Close()
 	http.Post(host+"/photo", bw.FormDataContentType(), buf)
+	defer os.RemoveAll("tmp/img/")
 	c.Redirect(http.StatusFound, "/roll/"+c.PostForm("rollId"))
+
+	// //Get file from form
+	// in, inHeader, err := c.Request.FormFile("myPhotos")
+	// if err != nil {
+	// 	log.Println("Couldn't parse FormFile: ", err)
+	// }
+	// defer in.Close()
+
+	// //Create tempfile
+	// temp, err := ioutil.TempFile("tmp/", "*"+inHeader.Filename)
+	// if err != nil {
+	// 	log.Println("Couldn't open parsed File for upload: ", err)
+	// }
+	// _, err = io.Copy(temp, in)
+	// if err != nil {
+	// 	log.Println("Couldn't write to temp file: ", err)
+	// }
+
+	// //Reopen tempfile
+	// output, err := os.Open(temp.Name())
+	// if err != nil {
+	// 	log.Println("Couldn't open parsed File for upload: ", err)
+	// }
+
+	// tw, _ := bw.CreateFormField("rollId")
+	// tw.Write([]byte(c.PostForm("rollId")))
+
+	// fw, _ := bw.CreateFormFile("files", output.Name())
+	// io.Copy(fw, output)
+
+	// bw.Close()
+	// http.Post(host+"/photo", bw.FormDataContentType(), buf)
+	// c.Redirect(http.StatusFound, "/roll/"+c.PostForm("rollId"))
 }
 
 func CreateRoll(c *gin.Context) {

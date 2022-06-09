@@ -40,3 +40,19 @@ func GetPhotoData(host string, uuid string) template.URL {
 	photoLink := template.URL(base64Photo)
 	return photoLink
 }
+
+// func DeletePhoto(host string, id string) (*http.Response, error) {
+// 	req, err := http.NewRequest("DELETE", host+"/photo/"+id, nil)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("could not create Delete Photo Request: %v", err)
+// 	}
+
+// 	client := &http.Client{}
+// 	resp, err := client.Do(req)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("could not send Delete Photo Request: %v", err)
+// 	}
+// 	defer resp.Body.Close()
+
+// 	return resp, nil
+// }

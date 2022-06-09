@@ -79,3 +79,25 @@ type PhotoUpload struct {
 	Roll_id int                     `form:"rollId"`
 	Files   []*multipart.FileHeader `form:"files"`
 }
+
+type PhotoDeletedResponse struct {
+	Success  bool      `json:"success"`
+	Errors   []Message `json:"errors"`
+	Messages []Message `json:"messages"`
+	Result   struct {
+		PhotoId int    `json:"photoId"`
+		Title   string `json:"title"`
+		Uuid    string `json:"uuid"`
+		RollId  int    `json:"rollId"`
+	} `json:"result"`
+}
+
+type ManufacturerResponse struct {
+	Success  bool      `json:"success"`
+	Errors   []Message `json:"errors"`
+	Messages []Message `json:"messages"`
+	Result   struct {
+		MId  int    `json:"mId"`
+		Name string `json:"name"`
+	} `json:"result"`
+}

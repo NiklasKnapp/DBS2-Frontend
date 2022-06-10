@@ -8,6 +8,7 @@ import (
 var RegisterRoutes = func(router *gin.Engine) {
 	router.GET("/", controllers.RedirectToIndex)
 	router.GET("/photos", controllers.OpenPhotos)
+	router.POST("/photos", controllers.OpenPhotosByTypeId)
 	router.GET("/deletephoto/:id", controllers.DeleteSinglePhoto)
 	router.GET("/rolls", controllers.OpenRolls)
 	router.POST("/createRoll", controllers.CreateRoll)

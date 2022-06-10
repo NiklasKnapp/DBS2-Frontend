@@ -35,8 +35,35 @@ func OpenPhotos(c *gin.Context) {
 	// figure out how to handle deletion of photos -> maybe disable removing in photo view
 	// istead, add button to go to the underlying roll or album
 
+	//Open Photos -> show nothing but search bar
+	//select all -> load all photos like default
+	//select rolltype -> load /photo/:rollId -> load only specific photos (change selected dropdown)
+
+	//Get Roll Type names
+	allRollTypes := &models.MultipleRollTypeResponse{}
+	err := utils.GetJson(host+"/rolltype/", allRollTypes)
+	if err != nil {
+		log.Println(err)
+	}
+
+	//Get manufacturer names
+	manufacturersId := make(map[int]string)
+	for _, e := range allRollTypes.Result {
+		if _, ok := manufacturersId[(e.Type_id)]; ok {
+			continue
+		} else {
+			manufacturer := &models.ManufacturerResponse{}
+			err := utils.GetJson(host+"/manufacturer/"+strconv.Itoa(e.M_id), manufacturer)
+			if err != nil {
+				log.Println(err)
+			}
+			manufacturersId[e.Type_id] = manufacturer.Result.Name
+		}
+	}
+
+	//set allPhotos to empty
 	allPhotos := &models.FilmRollPhotosResponse{}
-	err := utils.GetJson(host+"/photo/", allPhotos)
+	err = utils.GetJson(host+"/photo/type/-2", allPhotos)
 	if err != nil {
 		log.Println(err)
 	}
@@ -48,7 +75,70 @@ func OpenPhotos(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "photos.html", gin.H{
-		"photos": photoData,
+		"photos":        photoData,
+		"allRollTypes":  allRollTypes.Result,
+		"manufacturers": manufacturersId,
+	})
+}
+
+func OpenPhotosByTypeId(c *gin.Context) {
+	typeId := c.Request.FormValue("stockName")
+	fmt.Println(typeId)
+
+	//Get Roll Type names
+	allRollTypes := &models.MultipleRollTypeResponse{}
+	err := utils.GetJson(host+"/rolltype/", allRollTypes)
+	if err != nil {
+		log.Println(err)
+	}
+
+	//Get manufacturer names
+	manufacturersId := make(map[int]string)
+	for _, e := range allRollTypes.Result {
+		if _, ok := manufacturersId[(e.Type_id)]; ok {
+			continue
+		} else {
+			manufacturer := &models.ManufacturerResponse{}
+			err := utils.GetJson(host+"/manufacturer/"+strconv.Itoa(e.M_id), manufacturer)
+			if err != nil {
+				log.Println(err)
+			}
+			manufacturersId[e.Type_id] = manufacturer.Result.Name
+		}
+	}
+
+	//Get photos from database
+	allPhotos := &models.FilmRollPhotosResponse{}
+	if typeId == "-2" {
+		//Select Roll Type -> return empty
+		err = utils.GetJson(host+"/photo/type/-2", allPhotos)
+		if err != nil {
+			log.Println(err)
+		}
+	} else if typeId == "-1" {
+		//Select all -> return all
+		err = utils.GetJson(host+"/photo/", allPhotos)
+		if err != nil {
+			log.Println(err)
+		}
+	} else {
+		//Select specific -> return specific type id
+		err = utils.GetJson(host+"/photo/type/"+typeId, allPhotos)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+
+	//Create map for uuids and base64-templates -> receive each photo individually from server
+	photoData := make(map[int]template.URL)
+	for _, e := range allPhotos.Result {
+		photoData[e.PhotoId] = utils.GetPhotoData(host, e.Uuid)
+	}
+
+	c.HTML(http.StatusOK, "photos.html", gin.H{
+		"photos":        photoData,
+		"allRollTypes":  allRollTypes.Result,
+		"manufacturers": manufacturersId,
 	})
 }
 
@@ -94,7 +184,6 @@ func OpenRolls(c *gin.Context) {
 				log.Println(err)
 			}
 			manufacturersId[e.Type_id] = manufacturer.Result.Name
-
 		}
 	}
 

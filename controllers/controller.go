@@ -3,7 +3,6 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"io"
 	"io/fs"
@@ -28,17 +27,6 @@ func RedirectToIndex(c *gin.Context) {
 }
 
 func OpenPhotos(c *gin.Context) {
-
-	//Idea:
-	// Istead of showing all photos at once, first make user select sorting variables and then fetch pictures
-	// sort by: manufacturer, roll type, or get all photos
-	// figure out how to handle deletion of photos -> maybe disable removing in photo view
-	// istead, add button to go to the underlying roll or album
-
-	//Open Photos -> show nothing but search bar
-	//select all -> load all photos like default
-	//select rolltype -> load /photo/:rollId -> load only specific photos (change selected dropdown)
-
 	//Get Roll Type names
 	allRollTypes := &models.MultipleRollTypeResponse{}
 	err := utils.GetJson(host+"/rolltype/", allRollTypes)
@@ -136,7 +124,7 @@ func OpenPhotosByTypeId(c *gin.Context) {
 		rollIdMap[e.PhotoId] = e.RollId
 	}
 
-	fmt.Printf("%#v\n", rollIdMap)
+	//fmt.Printf("%#v\n", rollIdMap)
 
 	c.HTML(http.StatusOK, "photos.html", gin.H{
 		"photos":        photoData,
@@ -190,8 +178,6 @@ func OpenRolls(c *gin.Context) {
 			manufacturersId[e.Type_id] = manufacturer.Result.Name
 		}
 	}
-
-	// fmt.Printf("%#v\n", manufacturersId)
 
 	c.HTML(http.StatusOK, "rolls.html", gin.H{
 		"filmRoll":      filmRoll.Result,

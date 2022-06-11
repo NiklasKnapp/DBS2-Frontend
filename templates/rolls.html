@@ -9,6 +9,9 @@
             <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 + New Roll
             </button>
+            <button type="button" class="btn btn-dark" onclick="showDelete()">
+                Edit
+            </button>
         </div>
     </div>
 
@@ -16,29 +19,28 @@
     <div class="row">
         {{range $filmRoll := .filmRoll}}
         <div class="col" value="{{$filmRoll.Roll_id}}">
-            <a href="/roll/{{$filmRoll.Roll_id}}" class="card mx-auto mb-4" style="width: 22rem; text-decoration: none; color: #212529">
-                <div class="card-body">
+            <div class="card mx-auto mb-4" style="width: 22rem; text-decoration: none; color: #212529">
+                <a class="card-body text-decoration-none" href="/roll/{{$filmRoll.Roll_id}}">
                     <div class="row ">
                         <div class="col my-auto">
                             <h6 class="card-subtitle mb-2 text-muted">{{index $.manufacturers .Type_id}} - {{(index $.types .Type_id)}}</h6> 
                         </div>
-                        <!-- <div class="col text-end"> -->
-                            <!-- <button type="button" class="btn btn-outline-danger btn-sm">X</button> -->
-                        <!-- </div> -->
                     </div>
                     <h5 class="card-title">{{$filmRoll.Title}}</h5>
                     <p class="card-text">{{$filmRoll.Description}}</p>
-                </div>
-            </a>
-            <a href="/deleteroll/{{$filmRoll.Roll_id}}" type="button" class="btn btn-danger"role="button" id={{$filmRoll.Roll_id}}
-            style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-                Delete
-            </a>
+                </a>
+                <a href="/deleteroll/{{$filmRoll.Roll_id}}" class="card-body btn btn-outline-danger deleteButton" type="button" style="display: none;">
+                    Delete
+                    <!-- <a href="/deleteroll/{{$filmRoll.Roll_id}}" type="button" class="btn btn-danger"role="button" id={{$filmRoll.Roll_id}}
+                    style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                        Delete
+                    </a> -->
+                </a>
+            </div>
         </div>
         {{end}}
     </div>
 </div>
-
 
 <!-- Modal -->
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -103,5 +105,16 @@
         }, false)
     })
 })()
+
+function showDelete() {
+    var x = document.getElementsByClassName("deleteButton");
+    Array.from(x).forEach((x) => {
+        if (x.style.display === "none") {
+            x.style.display = "block";
+        } else {
+            x.style.display = "none";
+        }
+    })
+}
 </script>
 {{template "footer.html"}}

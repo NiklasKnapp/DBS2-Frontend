@@ -1,15 +1,12 @@
 {{template "header.html"}}
 <div class="container">
     <!--Title and new roll button-->
-    <div class="row my-4">
+    <div class="row my-3">
         <div class="col my-auto">
             <h1 class="fw-bold">My Photos</h1>
         </div>
-        <div class="col my-auto">
+        <div class="col my-auto d-grid gap-2 d-md-flex justify-content-md-end">
             <form action="/photos" enctype="multipart/form-data" method="post" class="row g-3 my-auto">
-                <!-- <div class="col-auto my-auto">
-                    <label for="DescInput" class="form-label">Select a Roll Type</label>
-                </div> -->
                 <div class="col-auto">
                     <select class="form-select" name="stockName" aria-label="Default select example">
                         <option value="-2">Select a Roll Type</option>

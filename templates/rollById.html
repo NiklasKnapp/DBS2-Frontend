@@ -7,17 +7,9 @@
             <h1 class="fw-bold">{{.rollTitle.Title}}</h1>
             <h5 class="mx-3 mb-4 text-muted fst-italic">{{.rollTitle.Description}}</h5>
         </div>
-        <div class="col text-end my-auto">
-            <!-- <form action="/create" method="post" name="uploadPhotos"></form>
-                <div class="input-group">
-                    <input class="form-control" type="file" id="formFileMultiple" multiple>
-                    <button type="submit" class="btn btn-dark btn-outline-secondary">
-                        Upload
-                    </button>
-                </div>
-            </form> -->
-            <div class="container">
-                <form action="/uploadPhoto" enctype="multipart/form-data" method="post" class="row g-3 me-auto">
+        <div class="col my-auto">
+            <div class="container d-grid gap-2 d-md-flex justify-content-md-end">
+                <form action="/uploadPhoto" enctype="multipart/form-data" method="post" class="row">
                     <div class="col-auto">
                         <input class="form-control" type="file" id="myPhotos" name="myPhotos" multiple>
                         <input type="hidden" id="rollId" name="rollId" value="{{.rollTitle.Roll_id}}">

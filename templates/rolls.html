@@ -74,7 +74,9 @@
                             {{end}}
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-dark">Submit</button>
+                    </div>
                 </form>
             </div>
             <!-- <div class="modal-footer">
@@ -106,6 +108,7 @@
     })
 })()
 
+//Show and hide delete buttons
 function showDelete() {
     var x = document.getElementsByClassName("deleteButton");
     Array.from(x).forEach((x) => {

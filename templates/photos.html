@@ -36,9 +36,9 @@
                 </a>
             </div>
             <div class="mx-3 mb-5">
-                <a href="/deletephotopool/{{$uuid}}" type="button" class="btn btn-danger"role="button" id={{$uuid}}
+                <a href="/roll/{{index $.rollIdMap $uuid}}" type="button" class="btn btn-dark"role="button" id={{index $.rollIdMap $uuid}}
                 style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-                    Delete
+                    Open Roll
                 </a>
             </div>
         </div>

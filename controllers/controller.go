@@ -83,7 +83,6 @@ func OpenPhotos(c *gin.Context) {
 
 func OpenPhotosByTypeId(c *gin.Context) {
 	typeId := c.Request.FormValue("stockName")
-	fmt.Println(typeId)
 
 	//Get Roll Type names
 	allRollTypes := &models.MultipleRollTypeResponse{}
@@ -131,14 +130,19 @@ func OpenPhotosByTypeId(c *gin.Context) {
 
 	//Create map for uuids and base64-templates -> receive each photo individually from server
 	photoData := make(map[int]template.URL)
+	rollIdMap := make(map[int]int)
 	for _, e := range allPhotos.Result {
 		photoData[e.PhotoId] = utils.GetPhotoData(host, e.Uuid)
+		rollIdMap[e.PhotoId] = e.RollId
 	}
+
+	fmt.Printf("%#v\n", rollIdMap)
 
 	c.HTML(http.StatusOK, "photos.html", gin.H{
 		"photos":        photoData,
 		"allRollTypes":  allRollTypes.Result,
 		"manufacturers": manufacturersId,
+		"rollIdMap":     rollIdMap,
 	})
 }
 
@@ -187,7 +191,7 @@ func OpenRolls(c *gin.Context) {
 		}
 	}
 
-	fmt.Printf("%#v\n", manufacturersId)
+	// fmt.Printf("%#v\n", manufacturersId)
 
 	c.HTML(http.StatusOK, "rolls.html", gin.H{
 		"filmRoll":      filmRoll.Result,
@@ -317,11 +321,6 @@ func DeleteSinglePhoto(c *gin.Context) {
 		return
 	}
 	defer resp.Body.Close()
-
-	// resp, err := utils.DeletePhoto(host, c.Params.ByName("id"))
-	// if err != nil {
-	// 	log.Println(err)
-	// }
 
 	response := &models.PhotoDeletedResponse{}
 	json.NewDecoder(resp.Body).Decode(response)

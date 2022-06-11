@@ -28,7 +28,7 @@
         {{range $uuid, $photo := .photos}}
         <div class="col-md-4">
             <div class="img-thumbnail mx-3">
-                <a href="#">
+                <a href="/roll/{{index $.rollIdMap $uuid}}">
                     <img id={{$uuid}} src={{$photo}} style="width:100%">
                 </a>
             </div>

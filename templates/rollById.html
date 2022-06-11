@@ -16,6 +16,7 @@
                     </div>
                     <div class="col-auto">
                         <button type="submit" class="btn btn-dark mb-3">Upload</button>
+                        <button type="button" class="btn btn-dark mb-3 mx-3" onclick="showDelete()">Edit</button>
                     </div>
                 </form>
             </div>
@@ -25,19 +26,38 @@
     <div class="row">
         {{range $uuid, $photo := .photos}}
         <div class="col-md-4">
-            <div class="img-thumbnail mx-3">
-                <a href="#">
-                    <img id={{$uuid}} src={{$photo}} style="width:100%">
-                </a>
-            </div>
-            <div class="mx-3 mb-5">
-                <a href="/deletephoto/{{$uuid}}" type="button" class="btn btn-danger"role="button" id={{$uuid}}
-                style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-                    Delete
+            <div class="card mx-3 mb-5">
+                <div class="card-body">
+                    <a href="#">
+                        <img id={{$uuid}} src={{$photo}} style="width:100%">
+                    </a>
+                    <!-- <div class="mx-3 mb-5">
+                        <a href="/deletephoto/{{$uuid}}" type="button" class="btn btn-danger"role="button" id={{$uuid}}
+                        style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                            Delete
+                        </a>
+                    </div> -->
+                </div>
+                <a href="/deletephoto/{{$uuid}}" type="button" class="card-body btn btn-outline-danger deleteButton" role="button" id={{$uuid}} style="display: none;">
+                    Delete Photo
                 </a>
             </div>
         </div>
         {{end}}
     </div>
 </div>
+
+<script>
+    //Show and hide delete buttons
+    function showDelete() {
+        var x = document.getElementsByClassName("deleteButton");
+        Array.from(x).forEach((x) => {
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        })
+    }
+</script>
 {{template "footer.html"}}

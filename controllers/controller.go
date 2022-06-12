@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"html/template"
 	"io"
-	"io/fs"
 	"io/ioutil"
 	"log"
 	"mime/multipart"
@@ -236,7 +235,7 @@ func UploadPhotos(c *gin.Context) {
 	buf := new(bytes.Buffer)
 	bw := multipart.NewWriter(buf)
 
-	os.Mkdir("tmp/img/", fs.FileMode(os.O_RDWR))
+	os.Mkdir("tmp/img/", 0777)
 
 	formfiles, _ := c.MultipartForm()
 	files := formfiles.File["myPhotos"]

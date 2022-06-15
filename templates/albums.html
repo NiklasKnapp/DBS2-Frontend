@@ -1,0 +1,107 @@
+{{template "header.html"}}
+<div class="container">
+    <!--Title and new album button-->
+    <div class="row my-3">
+        <div class="col my-auto">
+            <h1 class="fw-bold">My Photo Albums</h1>
+        </div>
+        <div class="col text-end my-auto">
+            <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                + New Album
+            </button>
+            <button type="button" class="btn btn-dark" onclick="showDelete()">
+                Edit
+            </button>
+        </div>
+    </div>
+
+    <!--Content-->
+    <div class="row">
+        {{range $album := .album}}
+        {{$image := index $.images $album.Uuid}}
+        <div class="col" value="{{$album.Album_id}}">
+            <div class="card mx-auto mb-4" style="width: 22rem; text-decoration: none; color: #212529">
+                <a class="card-body text-decoration-none" href="/album/{{$album.Album_id}}">
+                    <h5 class="card-title">{{$album.Title}}</h5>
+                    <a href="#">
+                        <img src={{$image}} style="width:100%">
+                    </a>
+                    <p class="card-text">{{$album.Description}}</p>
+                    <p>Rating: {{$album.Rating}}</p>
+                </a>
+                <a href="/deleteAlbum/{{$album.Album_id}}" class="card-body btn btn-outline-danger deleteButton" type="button" style="display: none;">
+                    Delete
+                </a>
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="exampleModalLabel">Add a new Album</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/createAlbum" method="post" name="createAlbum" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="TitleInput" class="form-label">Title</label>
+                        <input type="text" name="title" class="form-control" id="TitleInput" required>
+                        <div class="invalid-feedback">
+                            Please provide a valid Title.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="DescInput" class="form-label">Description</label>
+                        <input type="text" name="description" class="form-control" id="DescInput" required>
+                        <div class="invalid-feedback">
+                            Please provide a valid Description.
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-dark">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+(() => {
+    'use strict'
+
+  // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    const forms = document.querySelectorAll('.needs-validation')
+
+  // Loop over them and prevent submission
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+
+//Show and hide delete buttons
+function showDelete() {
+    var x = document.getElementsByClassName("deleteButton");
+    Array.from(x).forEach((x) => {
+        if (x.style.display === "none") {
+            x.style.display = "block";
+        } else {
+            x.style.display = "none";
+        }
+    })
+}
+</script>
+{{template "footer.html"}}

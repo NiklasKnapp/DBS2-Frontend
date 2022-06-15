@@ -19,6 +19,17 @@ type SingleFilmRollResponse struct {
 	} `json:"result"`
 }
 
+type SingleAlbumResponse struct {
+	Success  bool      `json:"success"`
+	Errors   []Message `json:"errors"`
+	Messages []Message `json:"messages"`
+	Result   struct {
+		Album_id     int    `json:"albumId"`
+		Title       string `json:"title"`
+		Description string `json:"description"`
+	} `json:"result"`
+}
+
 type PhotoResponse struct {
 	Success  bool      `json:"success"`
 	Errors   []Message `json:"errors"`
@@ -47,6 +58,19 @@ type FilmRollResponse struct {
 		Title       string            `json:"title"`
 		Description string            `json:"description"`
 		Type_id     int               `json:"typeId"`
+		Rating      float32           `json:"rating"`
+		Uuid        string            `json:"uuid"`
+	} `json:"result"`
+}
+
+type AlbumResponse struct {
+	Success  bool      `json:"success"`
+	Errors   []Message `json:"errors"`
+	Messages []Message `json:"messages"`
+	Result   []struct {
+		Album_id    int               `json:"albumId"`
+		Title       string            `json:"title"`
+		Description string            `json:"description"`
 		Rating      float32           `json:"rating"`
 		Uuid        string            `json:"uuid"`
 	} `json:"result"`
@@ -82,6 +106,11 @@ type FilmRollRequest struct {
 	Type_Id     int    `json:"typeId"`
 }
 
+type AlbumRequest struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
+
 type FilmRollPhotosResponse struct {
 	Success  bool      `json:"success"`
 	Errors   []Message `json:"errors"`
@@ -91,6 +120,20 @@ type FilmRollPhotosResponse struct {
 		Title   string          `json:"title"`
 		Uuid    string          `json:"uuid"`
 		RollId  int             `json:"rollId"`
+		Rating  float32         `json:"rating"`
+		Image   int             `json:"photo_id"`
+	} `json:"result"`
+}
+
+type AlbumPhotosResponse struct {
+	Success  bool      `json:"success"`
+	Errors   []Message `json:"errors"`
+	Messages []Message `json:"messages"`
+	Result   []struct {
+		PhotoId int             `json:"photoId"`
+		Title   string          `json:"title"`
+		Uuid    string          `json:"uuid"`
+		AlbumId  int            `json:"albumId"`
 		Rating  float32         `json:"rating"`
 		Image   int             `json:"photo_id"`
 	} `json:"result"`

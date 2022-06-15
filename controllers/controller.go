@@ -195,6 +195,28 @@ func OpenRolls(c *gin.Context) {
 	})
 }
 
+func OpenAlbums(c *gin.Context) {
+	album := &models.AlbumResponse{}
+	err := utils.GetJson(host+"/album/", album)
+	if err != nil {
+		log.Println(err)
+	}
+
+	images := make(map[string]template.URL)
+	for _, e := range album.Result {
+
+		
+		uuid := e.Uuid
+
+		images[(e.Uuid)] = utils.GetPhotoData(host, uuid)
+	}
+
+	c.HTML(http.StatusOK, "albums.html", gin.H{
+		"album":      album.Result,
+		"images":     images,
+	})
+}
+
 func OpenRollById(c *gin.Context) {
 	//Insert rating into DB
 	log.Println(c.Params)
@@ -236,6 +258,44 @@ func OpenRollById(c *gin.Context) {
 		"photos":    photoData,
 		"rollTitle": filmRoll.Result,
 		"rollType":  rollType.Result,
+		"ratings":   ratings,
+	})
+}
+
+func OpenAlbumById(c *gin.Context) {
+	//Insert rating into DB
+	log.Println(c.Params)
+	http.PostForm(host+"/rating/", url.Values{"photoId": {"185"}, "rating": {"3"}})
+
+	//Call backend and map response to struct
+	photosResponse := &models.AlbumPhotosResponse{}
+	albumId := c.Params.ByName("id")
+	err := utils.GetJson(host+"/photo/album/"+albumId, photosResponse)
+	if err != nil {
+		log.Println(err)
+	}
+
+	//Create map for uuids and base64-templates -> receive each photo individually from server
+	photoData := make(map[int]template.URL)
+	for _, e := range photosResponse.Result {
+		photoData[e.PhotoId] = utils.GetPhotoData(host, e.Uuid)
+	}
+
+	ratings := make(map[int]float32)
+	for _, e := range photosResponse.Result {
+		ratings[e.PhotoId] = e.Rating
+	}
+
+	//Get FilmRoll Title
+	album := &models.SingleAlbumResponse{}
+	err = utils.GetJson(host+"/album/"+albumId, album)
+	if err != nil {
+		log.Println(err)
+	}
+
+	c.HTML(http.StatusOK, "albumById.html", gin.H{
+		"photos":    photoData,
+		"albumTitle": album.Result,
 		"ratings":   ratings,
 	})
 }
@@ -311,13 +371,25 @@ func CreateRoll(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/rolls")
 }
 
+func CreateAlbum(c *gin.Context) {
+	filmRequest := &models.AlbumRequest{}
+	filmRequest.Title = c.PostForm("title")
+	filmRequest.Description = c.PostForm("description")
+	jsonValues, _ := json.Marshal(filmRequest)
+
+	http.Post(host+"/album/", "application/json", bytes.NewBuffer(jsonValues))
+	c.Redirect(http.StatusFound, "/albums")
+}
+
 func CreateRating(c *gin.Context) {
 	rating := &models.Rating{}
 	rating.Photo_id, _ = strconv.Atoi(c.PostForm("photo_id"))
 	rating.Rating, _ = strconv.Atoi(c.PostForm("rating"))
+	log.Printf(c.PostForm("photo_id"))
 	jsonValues, _ := json.Marshal(rating)
 
 	http.Post(host+"/rating/", "application/json", bytes.NewBuffer(jsonValues))
+	c.Redirect(http.StatusFound, "/rolls")
 }
 
 func DeleteSinglePhoto(c *gin.Context) {
@@ -395,4 +467,21 @@ func DeleteRollAndPhotos(c *gin.Context) {
 	}
 
 	c.Redirect(http.StatusFound, "/rolls")
+}
+
+func DeleteAlbum(c *gin.Context) {
+	//Delete album
+	req, err := http.NewRequest("DELETE", host+"/album/"+c.Params.ByName("id"), nil)
+	if err != nil {
+		log.Println("Could not create Delete Album Request: ", err)
+		return
+	}
+	client := &http.Client{}
+	_, err = client.Do(req)
+	if err != nil {
+		log.Println("Could not send Delete Album Request: ", err)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/albums")
 }

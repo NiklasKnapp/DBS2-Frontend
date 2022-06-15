@@ -1,0 +1,73 @@
+{{template "header.html"}}
+<div class="container">
+    <!--Title and new album button-->
+    <div class="row my-3">
+        <div class="col my-auto">
+            <h1 class="fw-bold">{{.albumTitle.Title}}</h1>
+            <h5 class="mx-3 mb-4 text-muted fst-italic">{{.albumTitle.Description}}</h5>
+        </div>
+        <div class="col my-auto">
+            <div class="container d-grid gap-2 d-md-flex justify-content-md-end">
+                <form action="/uploadPhoto" enctype="multipart/form-data" method="post" class="row">
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-dark mb-3 mx-3" onclick="showDelete()">Edit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {{range $uuid, $photo := .photos}}
+        {{$rating := index $.ratings $uuid}}
+        <div class="col-md-4">
+            <div class="card mx-3 mb-5">
+                <div class="card-body">
+                    <form action="/createRating" method="post" name="createRating">
+                        <a href="#">
+                            <img id={{$uuid}} src={{$photo}} style="width:100%">
+                        </a>
+                        <label>Rating: {{$rating}}</label>
+                        <div>
+                            <select name=rating id="rating">
+                                <option value="">--Please choose an rating--</option>
+                                <option value=1>1</option>
+                                <option value=2>2</option>
+                                <option value=3>3</option>
+                                <option value=4>4</option>
+                                <option value=5>5</option>
+                            </select>
+                            <input type="hidden" name="photoId" value={{$uuid}}>
+                            <input type="submit" value="Rate">
+                        </div>
+                    </form>
+                    <!-- <div class="mx-3 mb-5">
+                        <a href="/deletephoto/{{$uuid}}" type="button" class="btn btn-danger"role="button" id={{$uuid}}
+                        style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                            Delete
+                        </a>
+                    </div> -->
+                </div>
+                <a href="/deletephoto/{{$uuid}}" type="button" class="card-body btn btn-outline-danger deleteButton" role="button" id={{$uuid}} style="display: none;">
+                    Delete Photo
+                </a>
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>
+
+<script>
+    //Show and hide delete buttons
+    function showDelete() {
+        var x = document.getElementsByClassName("deleteButton");
+        Array.from(x).forEach((x) => {
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        })
+    }
+</script>
+{{template "footer.html"}}

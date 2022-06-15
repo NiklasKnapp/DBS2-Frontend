@@ -18,6 +18,7 @@
     <!--Content-->
     <div class="row">
         {{range $filmRoll := .filmRoll}}
+        {{$image := index $.images $filmRoll.Uuid}}
         <div class="col" value="{{$filmRoll.Roll_id}}">
             <div class="card mx-auto mb-4" style="width: 22rem; text-decoration: none; color: #212529">
                 <a class="card-body text-decoration-none" href="/roll/{{$filmRoll.Roll_id}}">
@@ -27,7 +28,11 @@
                         </div>
                     </div>
                     <h5 class="card-title">{{$filmRoll.Title}}</h5>
+                    <a href="#">
+                        <img src={{$image}} style="width:100%">
+                    </a>
                     <p class="card-text">{{$filmRoll.Description}}</p>
+                    <p>Rating: {{$filmRoll.Rating}}</p>
                 </a>
                 <a href="/deleteroll/{{$filmRoll.Roll_id}}" class="card-body btn btn-outline-danger deleteButton" type="button" style="display: none;">
                     Delete

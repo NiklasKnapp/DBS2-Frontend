@@ -9,6 +9,7 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 
@@ -140,6 +141,13 @@ func OpenRolls(c *gin.Context) {
 		log.Println(err)
 	}
 
+	images := make(map[string]template.URL)
+	for _, e := range filmRoll.Result {
+		uuid := e.Uuid
+
+		images[(e.Uuid)] = utils.GetPhotoData(host, uuid)
+	}
+
 	//Get Roll Types and stock name
 	typeids := make(map[int]string)
 	for _, e := range filmRoll.Result {
@@ -183,10 +191,15 @@ func OpenRolls(c *gin.Context) {
 		"types":         typeids,
 		"allRollTypes":  allRollTypes.Result,
 		"manufacturers": manufacturersId,
+		"images":        images,
 	})
 }
 
 func OpenRollById(c *gin.Context) {
+	//Insert rating into DB
+	log.Println(c.Params)
+	http.PostForm(host+"/rating/", url.Values{"photoId": {"185"}, "rating": {"3"}})
+
 	//Call backend and map response to struct
 	photosResponse := &models.FilmRollPhotosResponse{}
 	rollId := c.Params.ByName("id")
@@ -199,6 +212,11 @@ func OpenRollById(c *gin.Context) {
 	photoData := make(map[int]template.URL)
 	for _, e := range photosResponse.Result {
 		photoData[e.PhotoId] = utils.GetPhotoData(host, e.Uuid)
+	}
+
+	ratings := make(map[int]float32)
+	for _, e := range photosResponse.Result {
+		ratings[e.PhotoId] = e.Rating
 	}
 
 	//Get FilmRoll Title
@@ -218,6 +236,7 @@ func OpenRollById(c *gin.Context) {
 		"photos":    photoData,
 		"rollTitle": filmRoll.Result,
 		"rollType":  rollType.Result,
+		"ratings":   ratings,
 	})
 }
 
@@ -290,6 +309,15 @@ func CreateRoll(c *gin.Context) {
 
 	http.Post(host+"/filmroll/", "application/json", bytes.NewBuffer(jsonValues))
 	c.Redirect(http.StatusFound, "/rolls")
+}
+
+func CreateRating(c *gin.Context) {
+	rating := &models.Rating{}
+	rating.Photo_id, _ = strconv.Atoi(c.PostForm("photo_id"))
+	rating.Rating, _ = strconv.Atoi(c.PostForm("rating"))
+	jsonValues, _ := json.Marshal(rating)
+
+	http.Post(host+"/rating/", "application/json", bytes.NewBuffer(jsonValues))
 }
 
 func DeleteSinglePhoto(c *gin.Context) {

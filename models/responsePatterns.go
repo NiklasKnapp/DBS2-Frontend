@@ -19,15 +19,36 @@ type SingleFilmRollResponse struct {
 	} `json:"result"`
 }
 
+type PhotoResponse struct {
+	Success  bool      `json:"success"`
+	Errors   []Message `json:"errors"`
+	Messages []Message `json:"messages"`
+	Result   struct {
+		Photo_id    int    `json:"photoId"`
+		Title       string `json:"title"`
+		Uuid        string `json:"uuid"`
+		Roll_id     int    `json:"rollId"`
+		Rating      int    `json:"rating"`
+	} `json:"result"`
+}
+
+type Rating struct {
+	Rating_id   int    `json:"ratingId"`
+	Photo_id    int    `json:"photoId"`
+	Rating      int    `json:"rating"`
+}
+
 type FilmRollResponse struct {
 	Success  bool      `json:"success"`
 	Errors   []Message `json:"errors"`
 	Messages []Message `json:"messages"`
 	Result   []struct {
-		Roll_id     int    `json:"rollId"`
-		Title       string `json:"title"`
-		Description string `json:"description"`
-		Type_id     int    `json:"typeId"`
+		Roll_id     int               `json:"rollId"`
+		Title       string            `json:"title"`
+		Description string            `json:"description"`
+		Type_id     int               `json:"typeId"`
+		Rating      float32           `json:"rating"`
+		Uuid        string            `json:"uuid"`
 	} `json:"result"`
 }
 
@@ -66,10 +87,12 @@ type FilmRollPhotosResponse struct {
 	Errors   []Message `json:"errors"`
 	Messages []Message `json:"messages"`
 	Result   []struct {
-		PhotoId int    `json:"photoId"`
-		Title   string `json:"title"`
-		Uuid    string `json:"uuid"`
-		RollId  int    `json:"rollId"`
+		PhotoId int             `json:"photoId"`
+		Title   string          `json:"title"`
+		Uuid    string          `json:"uuid"`
+		RollId  int             `json:"rollId"`
+		Rating  float32         `json:"rating"`
+		Image   int             `json:"photo_id"`
 	} `json:"result"`
 }
 

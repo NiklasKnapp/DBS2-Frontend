@@ -220,7 +220,17 @@ func OpenAlbums(c *gin.Context) {
 func OpenRollById(c *gin.Context) {
 	//Insert rating into DB
 	log.Println(c.Params)
-	http.PostForm(host+"/rating/", url.Values{"photoId": {"185"}, "rating": {"3"}})
+
+
+
+	rating := &models.RatingRaw{}
+	rating.Photo_id = c.PostForm("photo_id")
+	rating.Rating = c.PostForm("rating")
+	jsonValues, _ := json.Marshal(rating)
+
+	http.Post(host+"/rating/", "application/json", bytes.NewBuffer(jsonValues))
+
+
 
 	//Call backend and map response to struct
 	photosResponse := &models.FilmRollPhotosResponse{}

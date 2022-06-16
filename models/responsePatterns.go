@@ -49,6 +49,11 @@ type Rating struct {
 	Rating      int    `json:"rating"`
 }
 
+type RatingRaw struct {
+	Photo_id    string    `json:"photoId"`
+	Rating      string    `json:"rating"`
+}
+
 type FilmRollResponse struct {
 	Success  bool      `json:"success"`
 	Errors   []Message `json:"errors"`

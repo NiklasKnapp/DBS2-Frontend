@@ -111,6 +111,11 @@ type FilmRollRequest struct {
 	Type_Id     int    `json:"typeId"`
 }
 
+type PA struct {
+	Photo_id   int `json:"photoId"`
+	Album_id   int `json:"albumId"`
+}
+
 type AlbumRequest struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`

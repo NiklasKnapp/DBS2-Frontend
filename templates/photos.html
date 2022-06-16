@@ -37,7 +37,21 @@
                 style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
                     Open Roll
                 </a>
-                
+                <form name="addAlbum" method="POST" action="/photos/">
+                    <a href="#">
+                        <img id={{$uuid}} src={{$photo}} style="width:100%">
+                    </a>
+                    <div>
+                        <select name=album_id id="rating">
+                            <option value="">--Please choose an album--</option>
+                            {{range $album_id, $title := $.albums}}
+                            <option value={{$album_id}}>{{$title}}</option>
+                            {{end}}
+                        </select>
+                        <input type="hidden" name="photo_id" value={{$uuid}}>
+                        <input type="submit" value="Rate">
+                    </div>
+                </form>
             </div>
         </div>
         {{end}}

@@ -140,12 +140,12 @@ type AlbumPhotosResponse struct {
 	Errors   []Message `json:"errors"`
 	Messages []Message `json:"messages"`
 	Result   []struct {
-		PhotoId int             `json:"photoId"`
+		PhotoId int          `json:"photoId"`
 		Title   string          `json:"title"`
 		Uuid    string          `json:"uuid"`
-		AlbumId  int            `json:"albumId"`
-		Rating  float32         `json:"rating"`
-		Image   int             `json:"photo_id"`
+		AlbumId string          `json:"albumId"`
+		Rating  float32          `json:"rating"`
+		Image   string          `json:"photo_id"`
 	} `json:"result"`
 }
 

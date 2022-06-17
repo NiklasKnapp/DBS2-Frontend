@@ -9,9 +9,9 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
-	"net/url"
 	"os"
 	"strconv"
+	"fmt"
 
 	"de.stuttgart.hft/DBS2-Frontend/models"
 	"de.stuttgart.hft/DBS2-Frontend/utils"
@@ -296,8 +296,12 @@ func OpenRollById(c *gin.Context) {
 
 func OpenAlbumById(c *gin.Context) {
 	//Insert rating into DB
-	log.Println(c.Params)
-	http.PostForm(host+"/rating/", url.Values{"photoId": {"185"}, "rating": {"3"}})
+	rating := &models.RatingRaw{}
+	rating.Photo_id = c.PostForm("photo_id")
+	rating.Rating = c.PostForm("rating")
+	jsonValues, _ := json.Marshal(rating)
+
+	http.Post(host+"/rating/", "application/json", bytes.NewBuffer(jsonValues))
 
 	//Call backend and map response to struct
 	photosResponse := &models.AlbumPhotosResponse{}
@@ -306,16 +310,19 @@ func OpenAlbumById(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 	}
+	pid := 0
 
 	//Create map for uuids and base64-templates -> receive each photo individually from server
 	photoData := make(map[int]template.URL)
 	for _, e := range photosResponse.Result {
-		photoData[e.PhotoId] = utils.GetPhotoData(host, e.Uuid)
+		pid = e.PhotoId
+		photoData[pid] = utils.GetPhotoData(host, e.Uuid)
 	}
 
 	ratings := make(map[int]float32)
 	for _, e := range photosResponse.Result {
-		ratings[e.PhotoId] = e.Rating
+		pid = e.PhotoId
+		ratings[pid] = e.Rating
 	}
 
 	//Get FilmRoll Title
@@ -324,6 +331,7 @@ func OpenAlbumById(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 	}
+	fmt.Printf("%+v\n", ratings)
 
 	c.HTML(http.StatusOK, "albumById.html", gin.H{
 		"photos":    photoData,

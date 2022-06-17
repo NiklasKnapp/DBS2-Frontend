@@ -44,9 +44,9 @@ type PhotoResponse struct {
 }
 
 type Rating struct {
-	Rating_id   int    `json:"ratingId"`
-	Photo_id    int    `json:"photoId"`
-	Rating      int    `json:"rating"`
+	Rating_id   string    `json:"ratingId"`
+	Photo_id    string    `json:"photoId"`
+	Rating      string    `json:"rating"`
 }
 
 type RatingRaw struct {

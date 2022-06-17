@@ -157,13 +157,15 @@ func OpenPhotosByTypeId(c *gin.Context) {
 }
 
 func OpenRolls(c *gin.Context) {
-	rating := &models.RatingRaw{}
-	rating.Photo_id = c.PostForm("photo_id")
+
+	rating := &models.Rating{}
+	rating.Photo_id = c.PostForm("photoId")
 	rating.Rating = c.PostForm("rating")
+	log.Printf(c.PostForm("photoId"))
 	jsonValues, _ := json.Marshal(rating)
 
 	http.Post(host+"/rating/", "application/json", bytes.NewBuffer(jsonValues))
-	d
+	
 	filmRoll := &models.FilmRollResponse{}
 	err := utils.GetJson(host+"/filmroll/", filmRoll)
 	if err != nil {
@@ -399,6 +401,8 @@ func UploadPhotos(c *gin.Context) {
 }
 
 func CreateRoll(c *gin.Context) {
+	body, _ := ioutil.ReadAll(c.Request.Body)
+    println(string(body))
 	filmRequest := &models.FilmRollRequest{}
 	filmRequest.Title = c.PostForm("title")
 	filmRequest.Description = c.PostForm("description")
@@ -421,10 +425,12 @@ func CreateAlbum(c *gin.Context) {
 }
 
 func CreateRating(c *gin.Context) {
+	body, _ := ioutil.ReadAll(c.Request.Body)
+    println(string(body))
 	rating := &models.Rating{}
-	rating.Photo_id, _ = strconv.Atoi(c.PostForm("photo_id"))
-	rating.Rating, _ = strconv.Atoi(c.PostForm("rating"))
-	log.Printf(c.PostForm("photo_id"))
+	rating.Photo_id = c.PostForm("photoId")
+	rating.Rating = c.PostForm("rating")
+	log.Printf(c.PostForm("photoId"))
 	jsonValues, _ := json.Marshal(rating)
 
 	http.Post(host+"/rating/", "application/json", bytes.NewBuffer(jsonValues))

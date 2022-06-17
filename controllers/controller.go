@@ -12,7 +12,6 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-	"fmt"
 
 	"de.stuttgart.hft/DBS2-Frontend/models"
 	"de.stuttgart.hft/DBS2-Frontend/utils"
@@ -29,11 +28,11 @@ func RedirectToIndex(c *gin.Context) {
 
 func OpenPhotos(c *gin.Context) {
 	photos_album := &models.PA{}
-	photos_album.Photo_id, _ = strconv.Atoi(c.PostForm("photo_id"))
-	photos_album.Album_id, _ = strconv.Atoi(c.PostForm("album_id"))
+	photos_album.Photo_id = c.PostForm("photo_id")
+	photos_album.Album_id = c.PostForm("album_id")
 	jsonValues, _ := json.Marshal(photos_album)
 
-	http.Post(host+"/rating/", "application/json", bytes.NewBuffer(jsonValues))
+	http.Post(host+"/photos_album/", "application/json", bytes.NewBuffer(jsonValues))
 
 	//Get Roll Type names
 	allRollTypes := &models.MultipleRollTypeResponse{}
@@ -64,15 +63,10 @@ func OpenPhotos(c *gin.Context) {
 		log.Println(err)
 	}
 
-	albumResponse := &models.AlbumResponse{}
-	errr := utils.GetJson(host+"/albums/", albumResponse)
-	if errr != nil {
-		log.Println(errr)
-	}
-
-	albums := make(map[int]string)
-	for _, e := range albumResponse.Result {
-		albums[e.Album_id] = e.Title
+	album := &models.AlbumResponse{}
+	err = utils.GetJson(host+"/album/", album)
+	if err != nil {
+		log.Println(err)
 	}
 
 	//Create map for uuids and base64-templates -> receive each photo individually from server
@@ -81,13 +75,11 @@ func OpenPhotos(c *gin.Context) {
 		photoData[e.PhotoId] = utils.GetPhotoData(host, e.Uuid)
 	}
 
-	fmt.Printf("%#v\n", albums)
-
 	c.HTML(http.StatusOK, "photos.html", gin.H{
 		"photos":        photoData,
 		"allRollTypes":  allRollTypes.Result,
 		"manufacturers": manufacturersId,
-		"albums":        albums,
+		"album":         album.Result,
 	})
 }
 
@@ -146,13 +138,18 @@ func OpenPhotosByTypeId(c *gin.Context) {
 		rollIdMap[e.PhotoId] = e.RollId
 	}
 
-	//fmt.Printf("%#v\n", rollIdMap)
+	album := &models.AlbumResponse{}
+	err = utils.GetJson(host+"/album/", album)
+	if err != nil {
+		log.Println(err)
+	}
 
 	c.HTML(http.StatusOK, "photos.html", gin.H{
 		"photos":        photoData,
 		"allRollTypes":  allRollTypes.Result,
 		"manufacturers": manufacturersId,
 		"rollIdMap":     rollIdMap,
+		"album":         album.Result,
 	})
 }
 
@@ -235,24 +232,18 @@ func OpenAlbums(c *gin.Context) {
 
 	images := make(map[string]template.URL)
 	for _, e := range album.Result {
-
-		
 		uuid := e.Uuid
-
 		images[(e.Uuid)] = utils.GetPhotoData(host, uuid)
 	}
 
 	c.HTML(http.StatusOK, "albums.html", gin.H{
-		"album":      album.Result,
-		"images":     images,
+		"album":         album.Result,
+		"images":        images,
 	})
 }
 
 func OpenRollById(c *gin.Context) {
 	//Insert rating into DB
-	log.Println(c.Params)
-
-
 
 	rating := &models.RatingRaw{}
 	rating.Photo_id = c.PostForm("photo_id")
@@ -401,8 +392,6 @@ func UploadPhotos(c *gin.Context) {
 }
 
 func CreateRoll(c *gin.Context) {
-	body, _ := ioutil.ReadAll(c.Request.Body)
-    println(string(body))
 	filmRequest := &models.FilmRollRequest{}
 	filmRequest.Title = c.PostForm("title")
 	filmRequest.Description = c.PostForm("description")

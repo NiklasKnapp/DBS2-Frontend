@@ -112,8 +112,8 @@ type FilmRollRequest struct {
 }
 
 type PA struct {
-	Photo_id   int `json:"photoId"`
-	Album_id   int `json:"albumId"`
+	Photo_id   string `json:"photoId"`
+	Album_id   string `json:"albumId"`
 }
 
 type AlbumRequest struct {

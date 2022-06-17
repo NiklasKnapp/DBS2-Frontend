@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+//Main
 func main() {
 	r := gin.Default()
 	r.Static("/assets", "./assets")

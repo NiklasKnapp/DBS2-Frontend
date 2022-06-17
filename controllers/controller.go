@@ -18,30 +18,38 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Host address
 var (
 	host string = "http://localhost:8080"
 )
 
+// Redirection to index page
 func RedirectToIndex(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/rolls")
 }
 
+// Open all photos
 func OpenPhotos(c *gin.Context) {
+
+	// List of photos
 	photos_album := &models.PA{}
+
+	// Get IDs from request
 	photos_album.Photo_id = c.PostForm("photo_id")
 	photos_album.Album_id = c.PostForm("album_id")
 	jsonValues, _ := json.Marshal(photos_album)
 
+	// Send POST request
 	http.Post(host+"/photos_album/", "application/json", bytes.NewBuffer(jsonValues))
 
-	//Get Roll Type names
+	// Get Roll Type names
 	allRollTypes := &models.MultipleRollTypeResponse{}
 	err := utils.GetJson(host+"/rolltype/", allRollTypes)
 	if err != nil {
 		log.Println(err)
 	}
 
-	//Get manufacturer names
+	// Get manufacturer names
 	manufacturersId := make(map[int]string)
 	for _, e := range allRollTypes.Result {
 		if _, ok := manufacturersId[(e.Type_id)]; ok {
@@ -56,25 +64,27 @@ func OpenPhotos(c *gin.Context) {
 		}
 	}
 
-	//set allPhotos to empty
+	// Set allPhotos to empty
 	allPhotos := &models.FilmRollPhotosResponse{}
 	err = utils.GetJson(host+"/photo/type/-2", allPhotos)
 	if err != nil {
 		log.Println(err)
 	}
 
+	// Get albums
 	album := &models.AlbumResponse{}
 	err = utils.GetJson(host+"/album/", album)
 	if err != nil {
 		log.Println(err)
 	}
 
-	//Create map for uuids and base64-templates -> receive each photo individually from server
+	// Create map for uuids and base64-templates -> receive each photo individually from server
 	photoData := make(map[int]template.URL)
 	for _, e := range allPhotos.Result {
 		photoData[e.PhotoId] = utils.GetPhotoData(host, e.Uuid)
 	}
 
+	// Response
 	c.HTML(http.StatusOK, "photos.html", gin.H{
 		"photos":        photoData,
 		"allRollTypes":  allRollTypes.Result,
@@ -83,7 +93,10 @@ func OpenPhotos(c *gin.Context) {
 	})
 }
 
+// Open photos by type ID
 func OpenPhotosByTypeId(c *gin.Context) {
+
+	// Get type from request
 	typeId := c.Request.FormValue("stockName")
 
 	//Get Roll Type names
@@ -93,7 +106,7 @@ func OpenPhotosByTypeId(c *gin.Context) {
 		log.Println(err)
 	}
 
-	//Get manufacturer names
+	// Get manufacturer names
 	manufacturersId := make(map[int]string)
 	for _, e := range allRollTypes.Result {
 		if _, ok := manufacturersId[(e.Type_id)]; ok {
@@ -108,29 +121,29 @@ func OpenPhotosByTypeId(c *gin.Context) {
 		}
 	}
 
-	//Get photos from database
+	// Get photos from database
 	allPhotos := &models.FilmRollPhotosResponse{}
 	if typeId == "-2" {
-		//Select Roll Type -> return empty
+		// Select Roll Type -> return empty
 		err = utils.GetJson(host+"/photo/type/-2", allPhotos)
 		if err != nil {
 			log.Println(err)
 		}
 	} else if typeId == "-1" {
-		//Select all -> return all
+		// Select all -> return all
 		err = utils.GetJson(host+"/photo/", allPhotos)
 		if err != nil {
 			log.Println(err)
 		}
 	} else {
-		//Select specific -> return specific type id
+		// Select specific -> return specific type id
 		err = utils.GetJson(host+"/photo/type/"+typeId, allPhotos)
 		if err != nil {
 			log.Println(err)
 		}
 	}
 
-	//Create map for uuids and base64-templates -> receive each photo individually from server
+	// Create map for uuids and base64-templates -> receive each photo individually from server
 	photoData := make(map[int]template.URL)
 	rollIdMap := make(map[int]int)
 	for _, e := range allPhotos.Result {
@@ -138,12 +151,14 @@ func OpenPhotosByTypeId(c *gin.Context) {
 		rollIdMap[e.PhotoId] = e.RollId
 	}
 
+	// Get albums
 	album := &models.AlbumResponse{}
 	err = utils.GetJson(host+"/album/", album)
 	if err != nil {
 		log.Println(err)
 	}
 
+	// Response
 	c.HTML(http.StatusOK, "photos.html", gin.H{
 		"photos":        photoData,
 		"allRollTypes":  allRollTypes.Result,
@@ -153,8 +168,10 @@ func OpenPhotosByTypeId(c *gin.Context) {
 	})
 }
 
+// Open all filmrolls
 func OpenRolls(c *gin.Context) {
 
+	// Send rating to DB
 	rating := &models.Rating{}
 	rating.Photo_id = c.PostForm("photoId")
 	rating.Rating = c.PostForm("rating")
@@ -163,12 +180,14 @@ func OpenRolls(c *gin.Context) {
 
 	http.Post(host+"/rating/", "application/json", bytes.NewBuffer(jsonValues))
 	
+	// Get filmrolls
 	filmRoll := &models.FilmRollResponse{}
 	err := utils.GetJson(host+"/filmroll/", filmRoll)
 	if err != nil {
 		log.Println(err)
 	}
 
+	// Get best rated image foreach filmroll
 	images := make(map[string]template.URL)
 	for _, e := range filmRoll.Result {
 		uuid := e.Uuid
@@ -176,7 +195,7 @@ func OpenRolls(c *gin.Context) {
 		images[(e.Uuid)] = utils.GetPhotoData(host, uuid)
 	}
 
-	//Get Roll Types and stock name
+	// Get Roll Types and stock name
 	typeids := make(map[int]string)
 	for _, e := range filmRoll.Result {
 		if _, ok := typeids[(e.Type_id)]; ok {
@@ -192,14 +211,14 @@ func OpenRolls(c *gin.Context) {
 		}
 	}
 
-	//Get Roll Type names
+	// Get Roll Type names
 	allRollTypes := &models.MultipleRollTypeResponse{}
 	err = utils.GetJson(host+"/rolltype/", allRollTypes)
 	if err != nil {
 		log.Println(err)
 	}
 
-	//Get manufacturer names
+	// Get manufacturer names
 	manufacturersId := make(map[int]string)
 	for _, e := range allRollTypes.Result {
 		if _, ok := manufacturersId[(e.Type_id)]; ok {
@@ -214,6 +233,7 @@ func OpenRolls(c *gin.Context) {
 		}
 	}
 
+	// Response
 	c.HTML(http.StatusOK, "rolls.html", gin.H{
 		"filmRoll":      filmRoll.Result,
 		"types":         typeids,
@@ -223,28 +243,36 @@ func OpenRolls(c *gin.Context) {
 	})
 }
 
+// Open all albums
 func OpenAlbums(c *gin.Context) {
+
+	// Initialize album response
 	album := &models.AlbumResponse{}
+
+	// Bind values to album response
 	err := utils.GetJson(host+"/album/", album)
 	if err != nil {
 		log.Println(err)
 	}
 
+	// Get best rated image of album
 	images := make(map[string]template.URL)
 	for _, e := range album.Result {
 		uuid := e.Uuid
 		images[(e.Uuid)] = utils.GetPhotoData(host, uuid)
 	}
 
+	// Response
 	c.HTML(http.StatusOK, "albums.html", gin.H{
 		"album":         album.Result,
 		"images":        images,
 	})
 }
 
+// Open roll by ID
 func OpenRollById(c *gin.Context) {
-	//Insert rating into DB
-
+	
+	// Insert rating into DB
 	rating := &models.RatingRaw{}
 	rating.Photo_id = c.PostForm("photo_id")
 	rating.Rating = c.PostForm("rating")
@@ -252,9 +280,7 @@ func OpenRollById(c *gin.Context) {
 
 	http.Post(host+"/rating/", "application/json", bytes.NewBuffer(jsonValues))
 
-
-
-	//Call backend and map response to struct
+	// Call backend and map response to struct
 	photosResponse := &models.FilmRollPhotosResponse{}
 	rollId := c.Params.ByName("id")
 	err := utils.GetJson(host+"/photo/roll/"+rollId, photosResponse)
@@ -262,7 +288,7 @@ func OpenRollById(c *gin.Context) {
 		log.Println(err)
 	}
 
-	//Create map for uuids and base64-templates -> receive each photo individually from server
+	// Create map for uuids and base64-templates -> receive each photo individually from server
 	photoData := make(map[int]template.URL)
 	for _, e := range photosResponse.Result {
 		photoData[e.PhotoId] = utils.GetPhotoData(host, e.Uuid)
@@ -273,7 +299,7 @@ func OpenRollById(c *gin.Context) {
 		ratings[e.PhotoId] = e.Rating
 	}
 
-	//Get FilmRoll Title
+	// Get FilmRoll Title and roll type
 	filmRoll := &models.SingleFilmRollResponse{}
 	err = utils.GetJson(host+"/filmroll/"+rollId, filmRoll)
 	if err != nil {
@@ -286,6 +312,7 @@ func OpenRollById(c *gin.Context) {
 		log.Println(err)
 	}
 
+	// Response
 	c.HTML(http.StatusOK, "rollById.html", gin.H{
 		"photos":    photoData,
 		"rollTitle": filmRoll.Result,
@@ -294,8 +321,10 @@ func OpenRollById(c *gin.Context) {
 	})
 }
 
+// Open Album by ID
 func OpenAlbumById(c *gin.Context) {
-	//Insert rating into DB
+	
+	// Insert rating into DB
 	rating := &models.RatingRaw{}
 	rating.Photo_id = c.PostForm("photo_id")
 	rating.Rating = c.PostForm("rating")
@@ -303,7 +332,7 @@ func OpenAlbumById(c *gin.Context) {
 
 	http.Post(host+"/rating/", "application/json", bytes.NewBuffer(jsonValues))
 
-	//Call backend and map response to struct
+	// Call backend and map response to struct
 	photosResponse := &models.AlbumPhotosResponse{}
 	albumId := c.Params.ByName("id")
 	err := utils.GetJson(host+"/photo/album/"+albumId, photosResponse)
@@ -312,20 +341,21 @@ func OpenAlbumById(c *gin.Context) {
 	}
 	pid := 0
 
-	//Create map for uuids and base64-templates -> receive each photo individually from server
+	// Create map for uuids and base64-templates -> receive each photo individually from server
 	photoData := make(map[int]template.URL)
 	for _, e := range photosResponse.Result {
 		pid = e.PhotoId
 		photoData[pid] = utils.GetPhotoData(host, e.Uuid)
 	}
 
+	// Get ratings of pictures
 	ratings := make(map[int]float32)
 	for _, e := range photosResponse.Result {
 		pid = e.PhotoId
 		ratings[pid] = e.Rating
 	}
 
-	//Get FilmRoll Title
+	// Get FilmRoll Title
 	album := &models.SingleAlbumResponse{}
 	err = utils.GetJson(host+"/album/"+albumId, album)
 	if err != nil {
@@ -333,6 +363,7 @@ func OpenAlbumById(c *gin.Context) {
 	}
 	fmt.Printf("%+v\n", ratings)
 
+	// Response
 	c.HTML(http.StatusOK, "albumById.html", gin.H{
 		"photos":    photoData,
 		"albumTitle": album.Result,
@@ -340,6 +371,7 @@ func OpenAlbumById(c *gin.Context) {
 	})
 }
 
+// Show photo by UUID
 func ShowPhoto(c *gin.Context) {
 	uuid := c.Params.ByName("uuid")
 	photoLink := utils.GetPhotoData(host, uuid)
@@ -349,17 +381,21 @@ func ShowPhoto(c *gin.Context) {
 	})
 }
 
+// Upload photos
 func UploadPhotos(c *gin.Context) {
-	//Create Buffer
+	
+	// Create Buffer
 	buf := new(bytes.Buffer)
 	bw := multipart.NewWriter(buf)
 
+	// Create directory
 	os.Mkdir("tmp/img/", 0777)
 
+	// Upoload form
 	formfiles, _ := c.MultipartForm()
 	files := formfiles.File["myPhotos"]
 	for _, file := range files {
-		//Get file from from
+		// Get file from from
 		inHeader := file
 		in, err := file.Open()
 		if err != nil {
@@ -367,7 +403,7 @@ func UploadPhotos(c *gin.Context) {
 		}
 		defer in.Close()
 
-		//Create temp file
+		// Create temp file
 		temp, err := ioutil.TempFile("tmp/img/", "*"+inHeader.Filename)
 		if err != nil {
 			log.Println("Couldn't open parsed File for upload: ", err)
@@ -377,28 +413,29 @@ func UploadPhotos(c *gin.Context) {
 			log.Println("Couldn't write to temp file: ", err)
 		}
 
-		//Reopen tempfile
+		// Reopen tempfile
 		output, err := os.Open(temp.Name())
 		if err != nil {
 			log.Println("Couldn't open parsed File for upload: ", err)
 		}
 
-		//Write file to form
+		// Write file to form
 		fw, _ := bw.CreateFormFile("files", output.Name())
 		io.Copy(fw, output)
 	}
 
-	//Write rollId to form once
+	// Write rollId to form once
 	tw, _ := bw.CreateFormField("rollId")
 	tw.Write([]byte(c.PostForm("rollId")))
 
-	//Close and send form to backend
+	// Close and send form to backend
 	bw.Close()
 	http.Post(host+"/photo", bw.FormDataContentType(), buf)
 	defer os.RemoveAll("tmp/img/")
 	c.Redirect(http.StatusFound, "/roll/"+c.PostForm("rollId"))
 }
 
+// Send create roll request to backend
 func CreateRoll(c *gin.Context) {
 	filmRequest := &models.FilmRollRequest{}
 	filmRequest.Title = c.PostForm("title")
@@ -411,6 +448,7 @@ func CreateRoll(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/rolls")
 }
 
+// Send create album request to backend
 func CreateAlbum(c *gin.Context) {
 	filmRequest := &models.AlbumRequest{}
 	filmRequest.Title = c.PostForm("title")
@@ -421,6 +459,7 @@ func CreateAlbum(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/albums")
 }
 
+// Send create rating request to backend
 func CreateRating(c *gin.Context) {
 	body, _ := ioutil.ReadAll(c.Request.Body)
     println(string(body))
@@ -434,13 +473,17 @@ func CreateRating(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/rolls")
 }
 
+// Delete single photo
 func DeleteSinglePhoto(c *gin.Context) {
+
+	// Create delete request to backend
 	req, err := http.NewRequest("DELETE", host+"/photo/"+c.Params.ByName("id"), nil)
 	if err != nil {
 		log.Println("Could not create Delete Photo Request: ", err)
 		return
 	}
 
+	// Send request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -456,13 +499,17 @@ func DeleteSinglePhoto(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/roll/"+strconv.Itoa(rollId))
 }
 
+// Delete photos
 func DeletePhotoFromPool(c *gin.Context) {
+
+	// Create delete request
 	req, err := http.NewRequest("DELETE", host+"/photo/"+c.Params.ByName("id"), nil)
 	if err != nil {
 		log.Println("Could not create Delete Photo Request: ", err)
 		return
 	}
 
+	// Send request to backend
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -474,11 +521,12 @@ func DeletePhotoFromPool(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/photos")
 }
 
+// Delete roll with photos
 func DeleteRollAndPhotos(c *gin.Context) {
 	photosInRoll := &models.FilmRollPhotosResponse{}
 	utils.GetJson(host+"/photo/roll/"+c.Params.ByName("id"), photosInRoll)
 
-	//Delete photos in roll
+	// Delete photos in roll
 	for _, e := range photosInRoll.Result {
 		req, err := http.NewRequest("DELETE", host+"/photo/"+strconv.Itoa(e.PhotoId), nil)
 		if err != nil {
@@ -486,6 +534,7 @@ func DeleteRollAndPhotos(c *gin.Context) {
 			return
 		}
 
+		// Send request
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
@@ -495,12 +544,14 @@ func DeleteRollAndPhotos(c *gin.Context) {
 		defer resp.Body.Close()
 	}
 
-	//Delete roll
+	// Delete roll
 	req, err := http.NewRequest("DELETE", host+"/filmroll/"+c.Params.ByName("id"), nil)
 	if err != nil {
 		log.Println("Could not create Delete Roll Request: ", err)
 		return
 	}
+
+	// Send request
 	client := &http.Client{}
 	_, err = client.Do(req)
 	if err != nil {
@@ -511,13 +562,17 @@ func DeleteRollAndPhotos(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/rolls")
 }
 
+// Delete album (without photos)
 func DeleteAlbum(c *gin.Context) {
-	//Delete album
+
+	// Delete album
 	req, err := http.NewRequest("DELETE", host+"/album/"+c.Params.ByName("id"), nil)
 	if err != nil {
 		log.Println("Could not create Delete Album Request: ", err)
 		return
 	}
+
+	// Send request
 	client := &http.Client{}
 	_, err = client.Do(req)
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Frondend Routes
 var RegisterRoutes = func(router *gin.Engine) {
 	router.GET("/", controllers.RedirectToIndex)
 	router.GET("/photos", controllers.OpenPhotos)
